@@ -1,0 +1,55 @@
+---
+import "../styles/global.css"
+
+const { title } = Astro.props
+---
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width"
+  />
+
+  <title>{title}</title>
+
+</head>
+
+<body>
+
+  <header class="navbar">
+
+    <div class="logo">
+      MAGIC CLICKER
+    </div>
+
+    <nav>
+
+      <a href="/">INICIO</a>
+
+      <a href="/login">JUGAR</a>
+
+      <a href="/about">ACERCA DE</a>
+
+      <a href="/contact">CONTACTO</a>
+
+    </nav>
+
+  </header>
+
+  <main>
+    <slot />
+  </main>
+
+  <footer class="footer">
+    © 2026 Magic Clicker
+  </footer>
+
+</body>
+
+</html>
