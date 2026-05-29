@@ -15,7 +15,9 @@
     "@astrojs/mdx": "^5.0.4",
     "@astrojs/rss": "^4.0.18",
     "@astrojs/sitemap": "^3.7.2",
+    "@supabase/supabase-js": "^2.106.2",
     "astro": "^6.2.1",
+    "dotenv": "^17.4.2",
     "sharp": "^0.34.3"
   }
 }
