@@ -434,9 +434,9 @@
 <!-- Header -->
 <header>
   <a href="/" class="logo">MAGIC CLICKER</a>
-  <nav id="mainNav">
+    <nav id="mainNav">
     <a href="/">INICIO</a>
-    <a href="/jugar">JUGAR</a>
+    <a href="/juego">JUGAR</a>
   </nav>
   <button class="menu-toggle" id="menuToggle" aria-label="Menú">
     <span></span><span></span><span></span>
@@ -478,17 +478,17 @@
       <!-- Login tab -->
       <div class="tab-content active" id="tab-login">
         <form id="loginForm" novalidate>
-          <div class="field" id="field-login-user">
-            <label for="login-user">NOMBRE DE MAGO</label>
-            <input type="text" id="login-user" name="username" placeholder="tu_nombre" autocomplete="username" />
-            <span class="error-msg">Ingresá tu nombre de mago</span>
+          <div id="login-server-error" style="display:none;color:var(--error);margin-bottom:0.8rem;font-family:'Cinzel', serif;letter-spacing:0.05em;"></div>
+          <div class="field" id="field-login-mail">
+            <label for="login-mail">CORREO ARCANO</label>
+            <input type="email" id="login-mail" name="mail" placeholder="mago@reino.com" autocomplete="email" />
+            <span class="error-msg">Ingresá un correo válido</span>
           </div>
           <div class="field" id="field-login-pass">
             <label for="login-pass">CONTRASEÑA</label>
             <input type="password" id="login-pass" name="password" placeholder="••••••••" autocomplete="current-password" />
             <span class="error-msg">Ingresá tu contraseña</span>
           </div>
-          <a href="#" class="forgot">¿Olvidaste tu contraseña?</a>
           <button type="submit" class="btn-submit">INVOCAR ACCESO</button>
         </form>
         <p class="form-note">¿No tenés cuenta? <span id="go-register">Registrate aquí</span></p>
@@ -497,6 +497,7 @@
       <!-- Register tab -->
       <div class="tab-content" id="tab-register">
         <form id="registerForm" novalidate>
+          <div id="register-server-error" style="display:none;color:var(--error);margin-bottom:0.8rem;font-family:'Cinzel', serif;letter-spacing:0.05em;"></div>
           <div class="field" id="field-reg-user">
             <label for="reg-user">NOMBRE DE MAGO</label>
             <input type="text" id="reg-user" name="username" placeholder="tu_nombre_único" autocomplete="username" />
@@ -567,19 +568,37 @@
   document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     let ok = true;
-    if (!val('login-user'))  { setError('field-login-user', true); ok = false; } else setError('field-login-user', false);
+    if (!val('login-mail') || !val('login-mail').includes('@')) { setError('field-login-mail', true); ok = false; } else setError('field-login-mail', false);
     if (!val('login-pass'))  { setError('field-login-pass', true); ok = false; } else setError('field-login-pass', false);
     if (!ok) return;
 
-    const res = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: val('login-user'), password: val('login-pass') })
-    });
-    if (res.ok) { const data = await res.json(); }
+    const API_BASE = 'http://localhost:3000'
+    const serverErrorEl = document.getElementById('login-server-error')
+    serverErrorEl.style.display = 'none'
+    serverErrorEl.textContent = ''
 
-    console.log('Login:', { username: val('login-user'), password: val('login-pass') });
-    alert('✦ Listo para conectar con el backend ✦');
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mail: val('login-mail'), contraseña: val('login-pass') })
+      })
+
+      const payload = await res.json().catch(() => ({}))
+      if (res.ok) {
+        if (payload.token) localStorage.setItem('token', payload.token)
+        if (payload.usuario) localStorage.setItem('usuario', JSON.stringify(payload.usuario))
+        window.location.href = '/juego'
+      } else {
+        serverErrorEl.textContent = payload.error || 'Error al iniciar sesión'
+        serverErrorEl.style.display = 'block'
+        console.error('Login failed:', payload)
+      }
+    } catch (err) {
+      serverErrorEl.textContent = 'Imposible conectar con el servidor'
+      serverErrorEl.style.display = 'block'
+      console.error('Network/login error', err)
+    }
   });
 
   /* ── Register form (preparado para fetch) ── */
@@ -592,15 +611,34 @@
     if (val('reg-pass') !== val('reg-pass2')) { setError('field-reg-pass2', true); ok = false; } else setError('field-reg-pass2', false);
     if (!ok) return;
 
-    const res = await fetch('/api/auth/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: val('reg-user'), email: val('reg-email'), password: val('reg-pass') })
-    });
-    if (res.ok) { }
+    const API_BASE = 'http://localhost:3000'
+    const serverErrorEl = document.getElementById('register-server-error')
+    serverErrorEl.style.display = 'none'
+    serverErrorEl.textContent = ''
 
-    console.log('Register:', { username: val('reg-user'), email: val('reg-email') });
-    alert('✦ Listo para conectar con el backend ✦');
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre: val('reg-user'), mail: val('reg-email'), password: val('reg-pass') })
+      })
+
+      const payload = await res.json().catch(() => ({}))
+      if (res.ok) {
+        serverErrorEl.style.display = 'block'
+        serverErrorEl.style.color = 'var(--gold)'
+        serverErrorEl.textContent = 'Usuario creado correctamente. Podés iniciar sesión.'
+        switchTab('login')
+      } else {
+        serverErrorEl.textContent = payload.error || 'Error al registrar usuario'
+        serverErrorEl.style.display = 'block'
+        console.error('Register failed:', payload)
+      }
+    } catch (err) {
+      serverErrorEl.textContent = 'Imposible conectar con el servidor'
+      serverErrorEl.style.display = 'block'
+      console.error('Network/register error', err)
+    }
   });
 </script>
 </body>

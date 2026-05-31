@@ -1,63 +1,56 @@
-# Astro Starter Kit: Blog
+# Magic Clicker — Proyecto
 
-```sh
-npm create astro@latest -- --template blog
+Magic Clicker es un juego incremental (clicker) con frontend en Astro y backend en Node/Express (opcional Supabase para persistencia).
+
+Resumen rápido
+- Frontend: `src/pages/juego.astro`, `src/pages/login.astro`.
+- Backend: `Backend/src/` con endpoints de autenticación y gestión de magias.
+- Esquema SQL de magias y rarezas: `Backend/db/schema_magias.sql` (crear tablas `rarezas`, `catalogo_magias`, `magias`).
+
+Instalación y ejecución
+
+1. Instalar dependencias (raíz para frontend):
+
+```bash
+npm install
+npm run dev
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+2. Backend (carpeta `Backend`):
 
-Features:
-
-- ✅ Minimal styling (make it your own!)
-- ✅ 100/100 Lighthouse performance
-- ✅ SEO-friendly with canonical URLs and Open Graph data
-- ✅ Sitemap support
-- ✅ RSS Feed support
-- ✅ Markdown & MDX support
-
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-├── public/
-├── src/
-│   ├── assets/
-│   ├── components/
-│   ├── content/
-│   ├── layouts/
-│   └── pages/
-├── astro.config.mjs
-├── README.md
-├── package.json
-└── tsconfig.json
+```bash
+cd Backend
+npm install
+npm run dev
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+Base de datos
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+En `Backend/db/schema_magias.sql` encontrarás el SQL para crear el catálogo maestro y la tabla de magias de usuarios. Aplica ese archivo en tu base de datos (por ejemplo usando el editor SQL de Supabase) o con `psql`:
 
-The `src/content/` directory contains "collections" of related Markdown and MDX documents. Use `getCollection()` to retrieve posts from `src/content/blog/`, and type-check your frontmatter using an optional schema. See [Astro's Content Collections docs](https://docs.astro.build/en/guides/content-collections/) to learn more.
+```bash
+psql $DATABASE_URL -f Backend/db/schema_magias.sql
+```
 
-Any static assets, like images, can be placed in the `public/` directory.
+Endpoints importantes (backend)
 
-## 🧞 Commands
+- `POST /api/auth/register` — crear usuario.
+- `POST /api/auth/login` — iniciar sesión (devuelve token).
+- `GET  /api/spells/catalog` — obtener catálogo maestro de magias.
+- `GET  /api/spells/mine` — obtener magias del usuario (requiere token).
+- `POST /api/spells/assign` — asignar una magia del catálogo al usuario (requiere token).
+- `POST /api/spells/equip` — equipar/unequipar una magia del usuario (requiere token).
+- `POST /api/game/gacha` — tirar gacha (consume clicks y crea magia para usuario).
 
-All commands are run from the root of the project, from a terminal:
+Notas de implementación
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+- El catálogo maestro contiene 4 magias (ids 1..4) con rarezas `Comun`, `Raro`, `Epico`, `Legendario`.
+- En el frontend actualmente hay persistencia local (`localStorage`) para pruebas; se puede adaptar para usar los endpoints del backend.
+- Recomendación: después de aplicar el SQL, probar las rutas `GET /api/spells/catalog` y `POST /api/spells/assign` usando un token válido.
 
-## 👀 Want to learn more?
+Contribuir
 
-Check out [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+- Si querés que integre el frontend con los endpoints para persistir las magias del usuario en la DB, lo implemento y pruebo.
 
-## Credit
-
-This theme is based off of the lovely [Bear Blog](https://github.com/HermanMartinus/bearblog/).
+---
+Plantilla original y créditos: esta base empezó desde una plantilla de Astro.
