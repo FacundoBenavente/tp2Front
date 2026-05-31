@@ -1,55 +1,75 @@
----
-import "../styles/global.css"
-
-const { title } = Astro.props
----
-
 <!DOCTYPE html>
 <html lang="es">
 
 <head>
-
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width" />
+  <title>MAGIC CLICKER</title>
+  <style>
+    html,
+    body {
+      min-height: 100%;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+      background: #050505;
+      background-image: none;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem 2.5rem;
+      border-bottom: 1px solid rgba(201,168,76,0.25);
+      background: rgba(5,5,5,0.85);
+      backdrop-filter: blur(8px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .logo {
+      font-family: 'Cinzel', serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      color: #c9a84c;
+      text-shadow: 0 0 20px rgba(201,168,76,0.4);
+        text-decoration: none;
 
-  <meta
-    name="viewport"
-    content="width=device-width"
-  />
-
-  <title>{title}</title>
-
+    }
+    nav ul {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    nav a {
+      font-family: 'Cinzel', serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      color: #8a7d5e;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    nav a:hover { color: #c9a84c; }
+  </style>
 </head>
 
 <body>
-
-  <header class="navbar">
-
-    <div class="logo">
-      MAGIC CLICKER
-    </div>
-
+  <header>
+    <a href="/" class="logo">MAGIC CLICKER</a>
     <nav>
-
-      <a href="/">INICIO</a>
-
-      <a href="/login">JUGAR</a>
-
-      <a href="/about">ACERCA DE</a>
-
-      <a href="/contact">CONTACTO</a>
-
+      <ul>
+        <li><a href="/">Inicio</a></li>
+        <li><a href="/jugar">Jugar</a></li>
+      </ul>
     </nav>
-
   </header>
 
   <main>
     <slot />
   </main>
-
-  <footer class="footer">
-    © 2026 Magic Clicker
-  </footer>
-
 </body>
-
 </html>

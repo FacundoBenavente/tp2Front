@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Magic Clicker — Iniciar Sesión</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --gold: #c9a84c;
+      --gold-light: #e8c97a;
+      --gold-dim: #7a6030;
+      --bg: #050505;
+      --bg2: #0d0d0d;
+      --surface: #111111;
+      --border: rgba(201,168,76,0.25);
+      --text: #f0ead6;
+      --text-muted: #8a7d5e;
+      --error: #c0392b;
+      --glow: rgba(201,168,76,0.15);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Crimson Text', Georgia, serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* ── Background particles ── */
+    .bg-canvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .spark {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      border-radius: 50%;
+      background: var(--gold);
+      opacity: 0;
+      animation: float-spark var(--dur, 8s) var(--delay, 0s) infinite ease-in-out;
+    }
+    @keyframes float-spark {
+      0%   { transform: translateY(100vh) translateX(0); opacity: 0; }
+      10%  { opacity: 0.7; }
+      90%  { opacity: 0.3; }
+      100% { transform: translateY(-10vh) translateX(var(--drift, 30px)); opacity: 0; }
+    }
+
+    /* ── Header ── */
+    header {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem 2.5rem;
+      border-bottom: 1px solid var(--border);
+      background: rgba(5,5,5,0.85);
+      backdrop-filter: blur(8px);
+    }
+    .logo {
+      font-family: 'Cinzel', serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      color: var(--gold);
+      text-decoration: none;
+      text-shadow: 0 0 20px rgba(201,168,76,0.4);
+    }
+    nav {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+    nav a {
+      font-family: 'Cinzel', serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    nav a:hover { color: var(--gold); }
+
+    /* ── Hamburger (mobile) ── */
+    .menu-toggle {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 4px;
+    }
+    .menu-toggle span {
+      display: block;
+      width: 22px;
+      height: 2px;
+      background: var(--gold);
+      transition: 0.3s;
+    }
+
+    /* ── Main layout ── */
+    main {
+      position: relative;
+      z-index: 5;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 1.5rem;
+    }
+
+    .login-wrapper {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      max-width: 900px;
+      width: 100%;
+      gap: 0;
+      border: 1px solid var(--border);
+      box-shadow: 0 0 60px rgba(201,168,76,0.08), 0 0 120px rgba(0,0,0,0.8);
+      background: var(--surface);
+      position: relative;
+    }
+
+    /* decorative corner accents */
+    .login-wrapper::before,
+    .login-wrapper::after {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border-color: var(--gold);
+      border-style: solid;
+      pointer-events: none;
+    }
+    .login-wrapper::before {
+      top: -1px; left: -1px;
+      border-width: 2px 0 0 2px;
+    }
+    .login-wrapper::after {
+      bottom: -1px; right: -1px;
+      border-width: 0 2px 2px 0;
+    }
+
+    /* ── Left panel: lore ── */
+    .lore-panel {
+      background: linear-gradient(160deg, #0a0805 0%, #0d0b06 40%, #080808 100%);
+      padding: 3.5rem 2.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      border-right: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .lore-panel::before {
+      content: '✦';
+      position: absolute;
+      font-size: 18rem;
+      color: rgba(201,168,76,0.03);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%,-50%);
+      pointer-events: none;
+      animation: pulse-rune 4s ease-in-out infinite;
+    }
+    @keyframes pulse-rune {
+      0%,100% { opacity: 0.5; transform: translate(-50%,-50%) scale(1); }
+      50%      { opacity: 1;   transform: translate(-50%,-50%) scale(1.05); }
+    }
+
+    .lore-eyebrow {
+      font-family: 'Cinzel', serif;
+      font-size: 0.6rem;
+      letter-spacing: 0.25em;
+      color: var(--gold-dim);
+      margin-bottom: 1.2rem;
+    }
+    .lore-title {
+      font-family: 'Cinzel', serif;
+      font-size: 2rem;
+      font-weight: 700;
+      line-height: 1.15;
+      color: var(--gold);
+      text-shadow: 0 0 30px rgba(201,168,76,0.3);
+      margin-bottom: 1.2rem;
+    }
+    .lore-divider {
+      width: 50px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      margin-bottom: 1.2rem;
+    }
+    .lore-text {
+      font-size: 1rem;
+      line-height: 1.75;
+      color: #b0a080;
+      font-style: italic;
+      margin-bottom: 2rem;
+    }
+    .lore-features {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+    .lore-features li {
+      font-family: 'Cinzel', serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .lore-features li::before {
+      content: '◆';
+      color: var(--gold);
+      font-size: 0.45rem;
+      flex-shrink: 0;
+    }
+
+    /* ── Right panel: form ── */
+    .form-panel {
+      padding: 3.5rem 2.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .form-eyebrow {
+      font-family: 'Cinzel', serif;
+      font-size: 0.6rem;
+      letter-spacing: 0.25em;
+      color: var(--gold-dim);
+      margin-bottom: 0.6rem;
+    }
+    .form-title {
+      font-family: 'Cinzel', serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.4rem;
+    }
+    .form-subtitle {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+    }
+
+    /* tabs */
+    .tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .tab-btn {
+      font-family: 'Cinzel', serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      padding: 0.6rem 1.4rem;
+      border: none;
+      background: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .tab-btn.active {
+      color: var(--gold);
+      border-bottom-color: var(--gold);
+    }
+    .tab-btn:hover:not(.active) { color: var(--text); }
+
+    /* form fields */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .field {
+      margin-bottom: 1.25rem;
+    }
+    .field label {
+      display: block;
+      font-family: 'Cinzel', serif;
+      font-size: 0.58rem;
+      letter-spacing: 0.15em;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+    .field input {
+      width: 100%;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'Crimson Text', serif;
+      font-size: 1rem;
+      padding: 0.7rem 1rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    }
+    .field input:focus {
+      border-color: var(--gold);
+      background: rgba(201,168,76,0.04);
+      box-shadow: 0 0 0 1px rgba(201,168,76,0.2);
+    }
+    .field input::placeholder { color: #4a4030; }
+
+    .forgot {
+      display: block;
+      text-align: right;
+      font-size: 0.8rem;
+      color: var(--gold-dim);
+      text-decoration: none;
+      margin-top: -0.75rem;
+      margin-bottom: 1.5rem;
+      transition: color 0.2s;
+    }
+    .forgot:hover { color: var(--gold); }
+
+    /* submit button */
+    .btn-submit {
+      width: 100%;
+      font-family: 'Cinzel', serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      padding: 0.9rem;
+      border: 1px solid var(--gold);
+      background: transparent;
+      color: var(--gold);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: color 0.3s;
+    }
+    .btn-submit::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--gold);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s ease;
+      z-index: -1;
+    }
+    .btn-submit:hover { color: #050505; }
+    .btn-submit:hover::before { transform: scaleX(1); }
+    .btn-submit:active { transform: scale(0.98); }
+
+    .form-note {
+      margin-top: 1.5rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-align: center;
+    }
+    .form-note a,
+    .form-note span {
+      color: var(--gold-dim);
+      text-decoration: none;
+      transition: color 0.2s;
+      cursor: pointer;
+    }
+    .form-note a:hover,
+    .form-note span:hover { color: var(--gold); }
+
+    /* error msg */
+    .error-msg {
+      display: none;
+      font-size: 0.8rem;
+      color: var(--error);
+      margin-top: 0.3rem;
+      font-family: 'Cinzel', serif;
+      letter-spacing: 0.05em;
+    }
+    .field.has-error input { border-color: var(--error); }
+    .field.has-error .error-msg { display: block; }
+
+    /* ── Footer ── */
+    footer {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 1.2rem;
+      border-top: 1px solid var(--border);
+      font-family: 'Cinzel', serif;
+      font-size: 0.55rem;
+      letter-spacing: 0.15em;
+      color: #3a3020;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 700px) {
+      header { padding: 1rem 1.25rem; }
+      nav { display: none; flex-direction: column; gap: 1rem; position: absolute; top: 100%; right: 0; background: rgba(5,5,5,0.97); border: 1px solid var(--border); padding: 1.5rem 2rem; width: 200px; }
+      nav.open { display: flex; }
+      .menu-toggle { display: flex; }
+
+      .login-wrapper { grid-template-columns: 1fr; }
+      .lore-panel { display: none; }
+      .form-panel { padding: 2.5rem 1.75rem; }
+      .lore-title { font-size: 1.5rem; }
+    }
+
+    @media (max-width: 400px) {
+      .form-panel { padding: 2rem 1.25rem; }
+      .form-title { font-size: 1.25rem; }
+    }
+
+    /* fade-in on load */
+    .login-wrapper {
+      animation: appear 0.8s ease both;
+    }
+    @keyframes appear {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-canvas" id="bgCanvas"></div>
+
+<!-- Header -->
+<header>
+  <a href="/" class="logo">MAGIC CLICKER</a>
+  <nav id="mainNav">
+    <a href="/">INICIO</a>
+    <a href="/jugar">JUGAR</a>
+  </nav>
+  <button class="menu-toggle" id="menuToggle" aria-label="Menú">
+    <span></span><span></span><span></span>
+  </button>
+</header>
+
+<!-- Main -->
+<main>
+  <div class="login-wrapper">
+
+    <!-- Lore panel -->
+    <div class="lore-panel">
+      <p class="lore-eyebrow">BIENVENIDO AL REINO</p>
+      <h1 class="lore-title">Invocar requiere identidad</h1>
+      <div class="lore-divider"></div>
+      <p class="lore-text">
+        Cada mago guarda su propio grimorio. Inicia sesión para acceder a tu colección de magias, tus puntos acumulados y tu historial de invocaciones.
+      </p>
+      <ul class="lore-features">
+        <li>Sistema gacha con raridades únicas</li>
+        <li>Magias con multiplicadores de click</li>
+        <li>Progreso guardado por cuenta</li>
+        <li>Construcciones y sinergias</li>
+      </ul>
+    </div>
+
+    <!-- Form panel -->
+    <div class="form-panel">
+      <p class="form-eyebrow">PORTAL DE ACCESO</p>
+      <h2 class="form-title">Identificación</h2>
+      <p class="form-subtitle">Accede a tu grimorio personal</p>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="login">ENTRAR</button>
+        <button class="tab-btn" data-tab="register">REGISTRARSE</button>
+      </div>
+
+      <!-- Login tab -->
+      <div class="tab-content active" id="tab-login">
+        <form id="loginForm" novalidate>
+          <div class="field" id="field-login-user">
+            <label for="login-user">NOMBRE DE MAGO</label>
+            <input type="text" id="login-user" name="username" placeholder="tu_nombre" autocomplete="username" />
+            <span class="error-msg">Ingresá tu nombre de mago</span>
+          </div>
+          <div class="field" id="field-login-pass">
+            <label for="login-pass">CONTRASEÑA</label>
+            <input type="password" id="login-pass" name="password" placeholder="••••••••" autocomplete="current-password" />
+            <span class="error-msg">Ingresá tu contraseña</span>
+          </div>
+          <a href="#" class="forgot">¿Olvidaste tu contraseña?</a>
+          <button type="submit" class="btn-submit">INVOCAR ACCESO</button>
+        </form>
+        <p class="form-note">¿No tenés cuenta? <span id="go-register">Registrate aquí</span></p>
+      </div>
+
+      <!-- Register tab -->
+      <div class="tab-content" id="tab-register">
+        <form id="registerForm" novalidate>
+          <div class="field" id="field-reg-user">
+            <label for="reg-user">NOMBRE DE MAGO</label>
+            <input type="text" id="reg-user" name="username" placeholder="tu_nombre_único" autocomplete="username" />
+            <span class="error-msg">El nombre debe tener al menos 3 caracteres</span>
+          </div>
+          <div class="field" id="field-reg-email">
+            <label for="reg-email">CORREO ARCANO</label>
+            <input type="email" id="reg-email" name="email" placeholder="mago@reino.com" autocomplete="email" />
+            <span class="error-msg">Ingresá un correo válido</span>
+          </div>
+          <div class="field" id="field-reg-pass">
+            <label for="reg-pass">CONTRASEÑA</label>
+            <input type="password" id="reg-pass" name="password" placeholder="••••••••" autocomplete="new-password" />
+            <span class="error-msg">La contraseña debe tener al menos 6 caracteres</span>
+          </div>
+          <div class="field" id="field-reg-pass2">
+            <label for="reg-pass2">CONFIRMAR CONTRASEÑA</label>
+            <input type="password" id="reg-pass2" name="password2" placeholder="••••••••" autocomplete="new-password" />
+            <span class="error-msg">Las contraseñas no coinciden</span>
+          </div>
+          <button type="submit" class="btn-submit" style="margin-top:0.5rem">CREAR GRIMORIO</button>
+        </form>
+        <p class="form-note">¿Ya tenés cuenta? <span id="go-login">Iniciá sesión</span></p>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+
+<script>
+  /* ── Sparks ── */
+  const canvas = document.getElementById('bgCanvas');
+  for (let i = 0; i < 30; i++) {
+    const s = document.createElement('div');
+    s.className = 'spark';
+    s.style.setProperty('--dur',   (6 + Math.random() * 10) + 's');
+    s.style.setProperty('--delay', (Math.random() * 10) + 's');
+    s.style.setProperty('--drift', ((Math.random() - 0.5) * 80) + 'px');
+    s.style.left = (Math.random() * 100) + '%';
+    canvas.appendChild(s);
+  }
+
+  /* ── Mobile menu ── */
+  document.getElementById('menuToggle').addEventListener('click', () => {
+    document.getElementById('mainNav').classList.toggle('open');
+  });
+
+  /* ── Tabs ── */
+  function switchTab(name) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === 'tab-' + name));
+  }
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+  });
+
+  document.getElementById('go-register').addEventListener('click', () => switchTab('register'));
+  document.getElementById('go-login').addEventListener('click', () => switchTab('login'));
+
+  /* ── Validation helpers ── */
+  function setError(fieldId, hasError) {
+    document.getElementById(fieldId).classList.toggle('has-error', hasError);
+  }
+  function val(id) { return document.getElementById(id).value.trim(); }
+
+  /* ── Login form (preparado para fetch) ── */
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    let ok = true;
+    if (!val('login-user'))  { setError('field-login-user', true); ok = false; } else setError('field-login-user', false);
+    if (!val('login-pass'))  { setError('field-login-pass', true); ok = false; } else setError('field-login-pass', false);
+    if (!ok) return;
+
+    // TODO: conectar con backend
+    // const res = await fetch('/api/auth/login', {
+    //   method: 'POST',
+    //   headers: { 'Content-Type': 'application/json' },
+    //   body: JSON.stringify({ username: val('login-user'), password: val('login-pass') })
+    // });
+    // if (res.ok) { const data = await res.json(); /* guardar token, redirigir */ }
+
+    console.log('Login:', { username: val('login-user'), password: val('login-pass') });
+    alert('✦ Listo para conectar con el backend ✦');
+  });
+
+  /* ── Register form (preparado para fetch) ── */
+  document.getElementById('registerForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    let ok = true;
+    if (val('reg-user').length < 3)  { setError('field-reg-user', true); ok = false; } else setError('field-reg-user', false);
+    if (!val('reg-email').includes('@')) { setError('field-reg-email', true); ok = false; } else setError('field-reg-email', false);
+    if (val('reg-pass').length < 6)  { setError('field-reg-pass', true); ok = false; } else setError('field-reg-pass', false);
+    if (val('reg-pass') !== val('reg-pass2')) { setError('field-reg-pass2', true); ok = false; } else setError('field-reg-pass2', false);
+    if (!ok) return;
+
+    // TODO: conectar con backend
+    // const res = await fetch('/api/auth/register', {
+    //   method: 'POST',
+    //   headers: { 'Content-Type': 'application/json' },
+    //   body: JSON.stringify({ username: val('reg-user'), email: val('reg-email'), password: val('reg-pass') })
+    // });
+    // if (res.ok) { /* redirigir al juego */ }
+
+    console.log('Register:', { username: val('reg-user'), email: val('reg-email') });
+    alert('✦ Listo para conectar con el backend ✦');
+  });
+</script>
+</body>
+</html>
