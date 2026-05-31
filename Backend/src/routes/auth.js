@@ -1,54 +1,73 @@
 import { Router } from 'express'
+import bcrypt from 'bcryptjs'
+import jwt from 'jsonwebtoken'
+import { randomUUID } from 'crypto'
 import { supabase } from '../supabase.js'
 
 const router = Router()
 
+const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-cambiar'
+
 router.post('/register', async (req, res) => {
-  console.log('Body recibido:', req.body)
-  const { nombre, mail, password } = req.body
-  console.log('Password:', password)
+  try {
+    const { nombre, mail, password } = req.body
+    if (!nombre || !mail || !password)
+      return res.status(400).json({ error: 'Faltan datos (nombre, mail, password)' })
 
-  // 1. Crear usuario en Supabase Auth
-  const { data: authData, error: authError } = await supabase.auth.signUp({
-    email: mail,
-    password: password
-  })
-  if (authError) return res.status(400).json({ error: authError.message })
+    // Verificar que el mail no esté ya registrado
+    const { data: existente } = await supabase
+      .from('usuario')
+      .select('idusuario')
+      .eq('mail', mail)
+      .maybeSingle()
 
-  // 2. Crear fila en tabla usuario
-  const { error: dbError } = await supabase
-    .from('usuario')
-    .insert({ idusuario: authData.user.id, nombre, mail, clicks: 0 })
+    if (existente)
+      return res.status(400).json({ error: 'El correo ya está registrado' })
 
-  if (dbError) return res.status(400).json({ error: dbError.message })
+    // Hashear la contraseña antes de guardarla
+    const hash = await bcrypt.hash(password, 10)
 
-  res.json({ mensaje: 'Usuario creado' })
+    const { error: dbError } = await supabase
+      .from('usuario')
+      .insert({ idusuario: randomUUID(), nombre, mail, contraseña: hash, clicks: 0 })
+
+    if (dbError) return res.status(400).json({ error: dbError.message })
+
+    res.json({ mensaje: 'Usuario creado' })
+  } catch (err) {
+    console.error('Error en register:', err)
+    res.status(500).json({ error: err.message || 'Internal server error' })
+  }
 })
 
 router.post('/login', async (req, res) => {
   try {
-    console.log('Login body:', req.body)
     const { mail, contraseña } = req.body
+    if (!mail || !contraseña)
+      return res.status(400).json({ error: 'Faltan datos (mail, contraseña)' })
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: mail,
-      password: contraseña
-    })
+    // Buscar el usuario directamente en la tabla
+    const { data: usuario, error } = await supabase
+      .from('usuario')
+      .select('*')
+      .eq('mail', mail)
+      .maybeSingle()
 
-    console.log('Supabase signIn result:', { data, error })
-    if (error) {
-      console.error('Login error:', error.message)
-      return res.status(401).json({ error: error.message })
-    }
+    if (error) return res.status(500).json({ error: error.message })
+    if (!usuario) return res.status(401).json({ error: 'Credenciales inválidas' })
 
-    if (!data || !data.session) {
-      console.error('Login failed: no session returned')
-      return res.status(500).json({ error: 'No session returned from auth provider' })
-    }
+    // Comparar la contraseña ingresada contra el hash almacenado
+    const valido = await bcrypt.compare(contraseña, usuario.contraseña || '')
+    if (!valido) return res.status(401).json({ error: 'Credenciales inválidas' })
 
-    res.json({ token: data.session.access_token, usuario: data.user })
+    // Generar un JWT propio
+    const token = jwt.sign({ id: usuario.idusuario }, JWT_SECRET, { expiresIn: '7d' })
+
+    // Nunca devolver el hash al cliente (se renombra para no chocar con el body)
+    const { contraseña: _hash, ...usuarioSinPass } = usuario
+    res.json({ token, usuario: usuarioSinPass })
   } catch (err) {
-    console.error('Unexpected login error:', err)
+    console.error('Error en login:', err)
     res.status(500).json({ error: err.message || 'Internal server error' })
   }
 })
@@ -57,22 +76,14 @@ router.post('/login', async (req, res) => {
 router.get('/debug/:email', async (req, res) => {
   try {
     const { email } = req.params
-    console.log(`Debug: buscando usuario con email: ${email}`)
-
     const { data, error } = await supabase
       .from('usuario')
-      .select('*')
+      .select('idusuario, nombre, mail, clicks')
       .eq('mail', email)
 
-    if (error) {
-      console.error('Debug query error:', error)
-      return res.status(500).json({ error: error.message })
-    }
-
-    console.log(`Debug: resultado:`, data)
+    if (error) return res.status(500).json({ error: error.message })
     res.json({ existe: data.length > 0, usuarios: data })
   } catch (err) {
-    console.error('Debug error:', err)
     res.status(500).json({ error: err.message })
   }
 })
