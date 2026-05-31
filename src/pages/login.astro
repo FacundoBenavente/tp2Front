@@ -571,13 +571,12 @@
     if (!val('login-pass'))  { setError('field-login-pass', true); ok = false; } else setError('field-login-pass', false);
     if (!ok) return;
 
-    // TODO: conectar con backend
-    // const res = await fetch('/api/auth/login', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ username: val('login-user'), password: val('login-pass') })
-    // });
-    // if (res.ok) { const data = await res.json(); /* guardar token, redirigir */ }
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: val('login-user'), password: val('login-pass') })
+    });
+    if (res.ok) { const data = await res.json(); }
 
     console.log('Login:', { username: val('login-user'), password: val('login-pass') });
     alert('✦ Listo para conectar con el backend ✦');
@@ -593,13 +592,12 @@
     if (val('reg-pass') !== val('reg-pass2')) { setError('field-reg-pass2', true); ok = false; } else setError('field-reg-pass2', false);
     if (!ok) return;
 
-    // TODO: conectar con backend
-    // const res = await fetch('/api/auth/register', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ username: val('reg-user'), email: val('reg-email'), password: val('reg-pass') })
-    // });
-    // if (res.ok) { /* redirigir al juego */ }
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: val('reg-user'), email: val('reg-email'), password: val('reg-pass') })
+    });
+    if (res.ok) { }
 
     console.log('Register:', { username: val('reg-user'), email: val('reg-email') });
     alert('✦ Listo para conectar con el backend ✦');
