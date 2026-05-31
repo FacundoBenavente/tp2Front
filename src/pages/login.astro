@@ -365,13 +365,15 @@
       color: var(--text-muted);
       text-align: center;
     }
-    .form-note a {
+    .form-note a,
+    .form-note span {
       color: var(--gold-dim);
       text-decoration: none;
       transition: color 0.2s;
       cursor: pointer;
     }
-    .form-note a:hover { color: var(--gold); }
+    .form-note a:hover,
+    .form-note span:hover { color: var(--gold); }
 
     /* error msg */
     .error-msg {
@@ -427,8 +429,7 @@
   </style>
 </head>
 <body>
-
-
+  <div class="bg-canvas" id="bgCanvas"></div>
 
 <!-- Header -->
 <header>
@@ -470,8 +471,8 @@
 
       <!-- Tabs -->
       <div class="tabs">
-        <button type="button" class="tab-btn active" data-tab="login">ENTRAR</button>
-        <button type="button" class="tab-btn" data-tab="register">REGISTRARSE</button>
+        <button class="tab-btn active" data-tab="login">ENTRAR</button>
+        <button class="tab-btn" data-tab="register">REGISTRARSE</button>
       </div>
 
       <!-- Login tab -->
@@ -490,7 +491,7 @@
           <a href="#" class="forgot">¿Olvidaste tu contraseña?</a>
           <button type="submit" class="btn-submit">INVOCAR ACCESO</button>
         </form>
-        <p class="form-note">¿No tenés cuenta? <a onclick="switchTab('register')">Registrate aquí</a></p>
+        <p class="form-note">¿No tenés cuenta? <span id="go-register">Registrate aquí</span></p>
       </div>
 
       <!-- Register tab -->
@@ -518,7 +519,7 @@
           </div>
           <button type="submit" class="btn-submit" style="margin-top:0.5rem">CREAR GRIMORIO</button>
         </form>
-        <p class="form-note">¿Ya tenés cuenta? <a onclick="switchTab('login')">Iniciá sesión</a></p>
+        <p class="form-note">¿Ya tenés cuenta? <span id="go-login">Iniciá sesión</span></p>
       </div>
 
     </div>
@@ -552,6 +553,9 @@
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => switchTab(btn.dataset.tab));
   });
+
+  document.getElementById('go-register').addEventListener('click', () => switchTab('register'));
+  document.getElementById('go-login').addEventListener('click', () => switchTab('login'));
 
   /* ── Validation helpers ── */
   function setError(fieldId, hasError) {
