@@ -2,9 +2,10 @@ Descripción:
 
 Magic Clicker es un juego clicker de temática mágica.
 
+Deploy: https://tp2-front-psi.vercel.app/
 Estructura:
 
-- Frontend (raíz del repo): sitio Astro. Páginas del juego en `src/pages/juego.astro` y `src/pages/login.astro`.
+- Frontend (raíz del repo): sitio Astro. Páginas del juego en src/pages/juego.astro y src/pages/login.astro.
 - Backend: autenticaicón del usuario
 
 Instalación y ejecución:
