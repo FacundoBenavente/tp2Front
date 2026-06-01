@@ -13,8 +13,14 @@ import Layout from "../layouts/Layout.astro"
 			</div>
 			<aside class="magic-panel">
 				<div class="panel-head">
-					<h2>Tus magias</h2>
-					<span id="multiplierLabel">Multiplicador total: 1.0x</span>
+					<div class="panel-title">
+						<span class="panel-eyebrow">✦ Grimorio ✦</span>
+						<h2>Tus magias</h2>
+					</div>
+					<div class="mult-total">
+						<span class="mult-total-value" id="multiplierLabel">1.00x</span>
+						<span class="mult-total-label">Multiplicador total</span>
+					</div>
 				</div>
 				<div class="magic-grid" id="magicGrid">
 					<!-- Magias se renderizan aquí -->
@@ -22,15 +28,14 @@ import Layout from "../layouts/Layout.astro"
 			</aside>
 		</div>
 
-		<div class="inventory-panel">
-			<div class="inventory-head">
-				<h2>Inventario de magias</h2>
-				<p>Equipa una magia para aumentar el multiplicador.</p>
+		<div class="modal-overlay" id="modalOverlay" aria-hidden="true">
+			<div class="modal" role="dialog" aria-modal="true">
+				<button class="modal-close" id="modalClose" aria-label="Cerrar">✕</button>
+				<div class="modal-content" id="modalContent"></div>
 			</div>
-			<div class="inventory-grid" id="inventoryGrid"></div>
 		</div>
 	</section>
-	<style>
+	<style is:global>
 		.game-screen {
 			padding: 2rem;
 			color: #fff;
@@ -43,7 +48,7 @@ import Layout from "../layouts/Layout.astro"
 			display: grid;
 			grid-template-columns: 1.5fr 1fr;
 			gap: 2rem;
-			align-items: stretch;
+			align-items: start;
 		}
 		.main-clicker {
 			background: rgba(255,255,255,0.04);
@@ -52,7 +57,7 @@ import Layout from "../layouts/Layout.astro"
 			display: flex;
 			flex-direction: column;
 			align-items: center;
-			justify-content: center;
+			justify-content: flex-start;
 			gap: 1.5rem;
 			min-height: 360px;
 			position: relative;
@@ -71,11 +76,13 @@ import Layout from "../layouts/Layout.astro"
 			border-radius: 50%;
 			border: 2px solid #c9a84c;
 			background: radial-gradient(circle at top, rgba(201,168,76,0.2), transparent 55%), #121212;
-			color: #f5f5f5;
-			font-size: 3rem;
+			color: #ffd97a;
+			font-size: 4.5rem;
+			font-weight: 700;
 			font-family: 'Cinzel', serif;
 			cursor: pointer;
 			box-shadow: 0 0 40px rgba(201,168,76,0.2);
+			text-shadow: 0 0 25px rgba(255,200,90,0.55);
 			transition: transform 0.2s, box-shadow 0.2s;
 		}
 		.big-click-btn:hover { transform: scale(1.02); }
@@ -98,160 +105,435 @@ import Layout from "../layouts/Layout.astro"
 			letter-spacing: 0.12em;
 		}
 		.magic-panel {
-			background: rgba(255,255,255,0.03);
-			border: 1px solid rgba(201,168,76,0.2);
+			position: relative;
+			background:
+				radial-gradient(130% 90% at 100% 0%, rgba(201,168,76,0.12), transparent 60%),
+				linear-gradient(180deg, rgba(22,19,12,0.65), rgba(8,8,8,0.55));
+			border: 1px solid rgba(201,168,76,0.28);
+			border-radius: 20px;
 			padding: 1.5rem;
 			display: flex;
 			flex-direction: column;
-			gap: 1rem;
+			gap: 1.25rem;
 			min-height: 360px;
+			overflow: hidden;
+		}
+		.magic-panel::before {
+			content: '';
+			position: absolute;
+			inset: 0;
+			background-image:
+				linear-gradient(rgba(201,168,76,0.045) 1px, transparent 1px),
+				linear-gradient(90deg, rgba(201,168,76,0.045) 1px, transparent 1px);
+			background-size: 22px 22px;
+			-webkit-mask-image: radial-gradient(120% 100% at 50% 0%, #000 30%, transparent 78%);
+			mask-image: radial-gradient(120% 100% at 50% 0%, #000 30%, transparent 78%);
+			pointer-events: none;
 		}
 		.panel-head {
+			position: relative;
 			display: flex;
-			flex-direction: column;
-			gap: 0.5rem;
+			align-items: flex-end;
+			justify-content: space-between;
+			gap: 1rem;
+			padding-bottom: 1rem;
+			border-bottom: 1px solid rgba(201,168,76,0.18);
+		}
+		.panel-eyebrow {
+			display: block;
+			font-family: 'Cinzel', serif;
+			font-size: 0.8rem;
+			letter-spacing: 0.28em;
+			text-transform: uppercase;
+			color: #b08e46;
+			margin-bottom: 0.5rem;
 		}
 		.panel-head h2 {
 			font-family: 'Cinzel', serif;
 			margin: 0;
-			font-size: 1.25rem;
-			color: #fff;
+			font-size: 1.35rem;
+			letter-spacing: 0.04em;
+			color: #f3ead2;
+			text-shadow: 0 0 24px rgba(201,168,76,0.25);
 		}
-		.panel-head span {
-			color: #fff;
-			font-size: 0.95rem;
-		}
-		.magic-grid {
-			display: grid;
-			grid-template-columns: 1fr;
-			gap: 0.9rem;
-			flex: 1;
-		}
-		.magic-card,
-		.inventory-card {
-			background: rgba(255,255,255,0.05);
-			border: 1px solid rgba(255,255,255,0.08);
-			padding: 1rem;
-			border-radius: 16px;
-			display: grid;
-			gap: 0.5rem;
-		}
-		.magic-card h3,
-		.inventory-card h3 {
-			font-family: 'Cinzel', serif;
-			margin: 0;
-			font-size: 1rem;
-			color: #fff;
-		}
-		.magic-card p,
-		.inventory-card p {
-			margin: 0;
-			color: #fff;
-			font-size: 0.9rem;
-			line-height: 1.4;
-		}
-		.rarity {
-			font-size: 0.8rem;
-			text-transform: uppercase;
-			letter-spacing: 0.12em;
-			color: #e0c27a;
-		}
-		.status-row {
-			display: flex;
-			justify-content: space-between;
-			gap: 1rem;
-			flex-wrap: wrap;
-		}
-		.inventory-panel {
-			background: rgba(255,255,255,0.03);
-			border: 1px solid rgba(201,168,76,0.2);
-			padding: 1.5rem;
-			border-radius: 24px;
+		.mult-total {
 			display: flex;
 			flex-direction: column;
-			gap: 1rem;
+			align-items: flex-end;
+			text-align: right;
+			flex-shrink: 0;
 		}
-		.inventory-head h2 {
+		.mult-total-value {
 			font-family: 'Cinzel', serif;
-			font-size: 1.25rem;
-			margin: 0;
-			color: #fff;
+			font-size: 1.65rem;
+			font-weight: 700;
+			line-height: 1;
+			color: #ffd97a;
+			text-shadow: 0 0 18px rgba(255,200,90,0.5);
 		}
-		.inventory-head p {
-			margin: 0;
-			color: #fff;
+		.mult-total-label {
+			font-size: 0.52rem;
+			letter-spacing: 0.2em;
+			text-transform: uppercase;
+			color: #8a7d5e;
+			margin-top: 0.4rem;
 		}
-		.inventory-grid {
+		.magic-grid {
+			position: relative;
 			display: grid;
-			grid-template-columns: repeat(3, minmax(0, 1fr));
-			gap: 1rem;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: 0.8rem;
+			flex: 1;
+			align-content: start;
+			overflow-y: auto;
+			max-height: 380px;
+			padding-right: 0.3rem;
 		}
-		.equip-btn {
-			border: 1px solid #c9a84c;
-			background: transparent;
-			color: #fff;
-			padding: 0.7rem 0.9rem;
+		.magic-grid::-webkit-scrollbar { width: 6px; }
+		.magic-grid::-webkit-scrollbar-thumb { background: rgba(201,168,76,0.3); border-radius: 3px; }
+		.magic-empty {
+			margin: auto;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 0.7rem;
+			color: #7a6f52;
+			font-style: italic;
+		}
+		.magic-empty .rune-big {
+			font-size: 2.6rem;
+			color: rgba(201,168,76,0.32);
+			animation: runePulse 3.5s ease-in-out infinite;
+		}
+		@keyframes runePulse {
+			0%,100% { opacity: 0.5; transform: scale(1); }
+			50% { opacity: 1; transform: scale(1.08); }
+		}
+		.magic-card {
+			--accent: #c9a84c;
+			--border: rgba(201,168,76,0.6);
+			--bg: rgba(201,168,76,0.15);
+			--glow: rgba(201,168,76,0.3);
+			position: relative;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			text-align: center;
+			gap: 0.5rem;
+			padding: 1.1rem 0.75rem 0.9rem;
+			border: 1.5px solid var(--border);
+			border-radius: 14px;
+			background:
+				radial-gradient(120% 70% at 50% 0%, var(--bg), transparent 65%),
+				linear-gradient(180deg, rgba(255,255,255,0.04), rgba(0,0,0,0.3));
+			overflow: hidden;
+			animation: cardIn 0.45s ease both;
+			transition: transform 0.18s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+		}
+		.magic-card::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			height: 3px;
+			background: linear-gradient(90deg, transparent, var(--accent), transparent);
+		}
+		.magic-card:hover {
+			transform: translateY(-3px);
+			border-color: var(--accent);
+			box-shadow: 0 14px 32px -14px var(--glow), inset 0 0 30px -20px var(--accent);
+		}
+		.magic-rune {
+			display: grid;
+			place-items: center;
+			width: 52px;
+			height: 52px;
+			border-radius: 50%;
+			font-size: 1.65rem;
+			color: var(--accent);
+			background: radial-gradient(circle, var(--bg), transparent 70%);
+			border: 1px solid var(--border);
+			text-shadow: 0 0 14px var(--glow);
+		}
+		.magic-card .rarity {
 			font-family: 'Cinzel', serif;
-			letter-spacing: 0.08em;
+			font-size: 0.5rem;
+			text-transform: uppercase;
+			letter-spacing: 0.18em;
+			color: var(--accent);
+			padding: 0.18rem 0.6rem;
+			border: 1px solid var(--border);
+			border-radius: 999px;
+		}
+		.magic-card h3 {
+			font-family: 'Cinzel', serif;
+			margin: 0;
+			font-size: 0.95rem;
+			line-height: 1.2;
+			color: #f3ead2;
+		}
+		.magic-card .mult {
+			margin-top: 0.05rem;
+			font-family: 'Cinzel', serif;
+			font-size: 1.15rem;
+			font-weight: 700;
+			color: #ffe1a0;
+			text-shadow: 0 0 12px var(--glow);
+		}
+		.magic-card.rareza-1 { --accent:#aeb7c2; --border:rgba(174,183,194,0.6); --bg:rgba(174,183,194,0.16); --glow:rgba(174,183,194,0.3); }
+		.magic-card.rareza-2 { --accent:#5aa9ff; --border:rgba(90,169,255,0.6); --bg:rgba(90,169,255,0.16); --glow:rgba(90,169,255,0.35); }
+		.magic-card.rareza-3 { --accent:#b878ff; --border:rgba(184,120,255,0.62); --bg:rgba(184,120,255,0.18); --glow:rgba(184,120,255,0.38); }
+		.magic-card.rareza-4 { --accent:#ffc04a; --border:rgba(255,192,74,0.66); --bg:rgba(255,192,74,0.18); --glow:rgba(255,192,74,0.45); }
+		.magic-card.rareza-4::after {
+			content: '';
+			position: absolute;
+			inset: 0;
+			border-radius: 14px;
+			pointer-events: none;
+			box-shadow: inset 0 0 34px -14px var(--accent);
+		}
+		@keyframes cardIn {
+			from { opacity: 0; transform: translateY(10px); }
+			to { opacity: 1; transform: translateY(0); }
+		}
+		.modal-overlay {
+			position: fixed;
+			inset: 0;
+			z-index: 100;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			padding: 1.5rem;
+			background: rgba(3,3,3,0.78);
+			backdrop-filter: blur(6px);
+			opacity: 0;
+			visibility: hidden;
+			transition: opacity 0.25s ease, visibility 0.25s ease;
+		}
+		.modal-overlay.open {
+			opacity: 1;
+			visibility: visible;
+		}
+		.modal {
+			--accent: #c9a84c;
+			--border: rgba(201,168,76,0.5);
+			--bg: rgba(201,168,76,0.16);
+			--glow: rgba(201,168,76,0.4);
+			position: relative;
+			width: 100%;
+			max-width: 380px;
+			padding: 2.5rem 2rem 2rem;
+			border: 1px solid var(--border);
+			border-radius: 20px;
+			background:
+				radial-gradient(120% 80% at 50% 0%, var(--bg), transparent 60%),
+				linear-gradient(180deg, #14110b, #080808);
+			box-shadow: 0 30px 80px -30px #000, 0 0 60px -20px var(--glow);
+			text-align: center;
+			transform: translateY(14px) scale(0.96);
+			transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.3);
+		}
+		.modal-overlay.open .modal { transform: translateY(0) scale(1); }
+		.modal::before, .modal::after {
+			content: '';
+			position: absolute;
+			width: 18px;
+			height: 18px;
+			border-color: var(--accent);
+			border-style: solid;
+			pointer-events: none;
+		}
+		.modal::before { top: 10px; left: 10px; border-width: 2px 0 0 2px; }
+		.modal::after { bottom: 10px; right: 10px; border-width: 0 2px 2px 0; }
+		.modal-close {
+			position: absolute;
+			top: 0.8rem;
+			right: 0.9rem;
+			background: none;
+			border: none;
+			color: #8a7d5e;
+			font-size: 1rem;
 			cursor: pointer;
-			width: fit-content;
-			justify-self: start;
+			transition: color 0.2s;
+			line-height: 1;
 		}
-		.equip-btn.active {
-			background: #c9a84c;
-			color: #050505;
+		.modal-close:hover { color: var(--accent); }
+		.modal-eyebrow {
+			display: block;
+			font-family: 'Cinzel', serif;
+			font-size: 0.6rem;
+			letter-spacing: 0.3em;
+			text-transform: uppercase;
+			color: var(--accent);
+			margin-bottom: 1.25rem;
 		}
-		.inventory-card .rarity {
-			justify-self: end;
+		.modal-rune {
+			width: 96px;
+			height: 96px;
+			margin: 0 auto 1.25rem;
+			display: grid;
+			place-items: center;
+			border-radius: 50%;
+			font-size: 2.8rem;
+			color: var(--accent);
+			background: radial-gradient(circle, var(--bg), transparent 70%);
+			border: 1px solid var(--border);
+			text-shadow: 0 0 24px var(--glow);
+			animation: runeReveal 0.6s ease both, runePulse 3s ease-in-out 0.6s infinite;
 		}
+		@keyframes runeReveal {
+			from { opacity: 0; transform: scale(0.5) rotate(-25deg); }
+			to { opacity: 1; transform: scale(1) rotate(0); }
+		}
+		.modal-name {
+			font-family: 'Cinzel', serif;
+			font-size: 1.6rem;
+			margin: 0 0 0.6rem;
+			color: #f5ecd4;
+			text-shadow: 0 0 24px var(--glow);
+		}
+		.modal-rarity {
+			display: inline-block;
+			font-family: 'Cinzel', serif;
+			font-size: 0.62rem;
+			letter-spacing: 0.22em;
+			text-transform: uppercase;
+			color: var(--accent);
+			padding: 0.35rem 1rem;
+			border: 1px solid var(--border);
+			border-radius: 999px;
+			margin-bottom: 1.5rem;
+		}
+		.modal-mult {
+			font-size: 0.95rem;
+			color: #b6a981;
+			letter-spacing: 0.04em;
+		}
+		.modal-mult b {
+			color: #ffe1a0;
+			font-size: 1.3rem;
+			font-weight: 700;
+		}
+		.modal-msg {
+			font-size: 1rem;
+			line-height: 1.6;
+			color: #d8cca8;
+		}
+		.modal.rareza-1 { --accent:#aeb7c2; --border:rgba(174,183,194,0.55); --bg:rgba(174,183,194,0.18); --glow:rgba(174,183,194,0.4); }
+		.modal.rareza-2 { --accent:#5aa9ff; --border:rgba(90,169,255,0.55); --bg:rgba(90,169,255,0.18); --glow:rgba(90,169,255,0.45); }
+		.modal.rareza-3 { --accent:#b878ff; --border:rgba(184,120,255,0.58); --bg:rgba(184,120,255,0.2); --glow:rgba(184,120,255,0.5); }
+		.modal.rareza-4 { --accent:#ffc04a; --border:rgba(255,192,74,0.62); --bg:rgba(255,192,74,0.2); --glow:rgba(255,192,74,0.55); }
 		@media (max-width: 900px) {
 			.top-area { grid-template-columns: 1fr; }
-			.inventory-grid { grid-template-columns: 1fr 1fr; }
 		}
 		@media (max-width: 640px) {
-			.inventory-grid { grid-template-columns: 1fr; }
 			.main-clicker { min-height: auto; }
 		}
 	</style>
 </Layout>
 
 <script>
-	// Catálogo base de magias (id 1..4)
-	const masterSpells = [
-		{ id: 1, name: 'Chispa Común', description: 'Aumenta ligeramente tus clicks.', rarity: 'Comun', multiplier: 1.05 },
-		{ id: 2, name: 'Rayo Raro', description: 'Multiplica tus clicks de forma notable.', rarity: 'Raro', multiplier: 1.15 },
-		{ id: 3, name: 'Fulgor Épico', description: 'Potencia poderosa para clicks.', rarity: 'Epico', multiplier: 1.25 },
-		{ id: 4, name: 'Llama Legendaria', description: 'Magia suprema con gran multiplicador.', rarity: 'Legendario', multiplier: 1.5 }
-	]
-
-	// userSpells guarda las magias del usuario: { id, equipped }
-	function loadUserSpells() {
-		try {
-			return JSON.parse(localStorage.getItem('userSpells')) || []
-		} catch (e) { return [] }
-	}
-	function saveUserSpells(arr) { localStorage.setItem('userSpells', JSON.stringify(arr)) }
-
-	let userSpells = loadUserSpells()
+	let userMagias = []
 	let clicks = 0
 	const invokeCost = 100
+
+	const API_BASE = 'http://localhost:3000'
+	function getToken() { return localStorage.getItem('token') }
+
+	let saveTimer = null
+	function saveClicks() {
+		const token = getToken()
+		if (!token) return
+		clearTimeout(saveTimer)
+		saveTimer = setTimeout(() => {
+			fetch(`${API_BASE}/api/game/clicks`, {
+				method: 'PUT',
+				headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+				body: JSON.stringify({ clicks: Math.floor(clicks) })
+			}).catch(err => console.error('No se pudo guardar los clicks', err))
+		}, 800)
+	}
+
+	async function loadClicks() {
+		const token = getToken()
+		if (!token) return
+		try {
+			const res = await fetch(`${API_BASE}/api/game/profile`, {
+				headers: { 'Authorization': `Bearer ${token}` }
+			})
+			if (!res.ok) return
+			const data = await res.json()
+			if (typeof data.clicks === 'number') {
+				clicks = data.clicks
+				updateDisplay()
+			}
+		} catch (err) {
+			console.error('No se pudo cargar el perfil', err)
+		}
+	}
 
 	const clickBtn = document.getElementById('clickBtn')
 	const invokeBtn = document.getElementById('invokeBtn')
 	const invokeCostLabel = document.getElementById('invokeCost')
 	const magicGrid = document.getElementById('magicGrid')
-	const inventoryGrid = document.getElementById('inventoryGrid')
 	const multiplierLabel = document.getElementById('multiplierLabel')
 
-	function ownedSpells() {
-		return userSpells.map(us => {
-			const info = masterSpells.find(m => m.id === us.id)
-			return { ...info, equipped: !!us.equipped }
-		})
+	const modalOverlay = document.getElementById('modalOverlay')
+	const modalContent = document.getElementById('modalContent')
+	const modalClose = document.getElementById('modalClose')
+	const modalBox = modalOverlay.querySelector('.modal')
+
+	function openModal() {
+		modalOverlay.classList.add('open')
+		modalOverlay.setAttribute('aria-hidden', 'false')
+	}
+	function closeModal() {
+		modalOverlay.classList.remove('open')
+		modalOverlay.setAttribute('aria-hidden', 'true')
+	}
+	function showMagicModal(magia) {
+		modalBox.className = `modal rareza-${magia.rareza_id}`
+		modalContent.innerHTML = `
+			<span class="modal-eyebrow">✦ Invocación exitosa ✦</span>
+			<div class="modal-rune">${RAREZA_SIMBOLO[magia.rareza_id] || '✦'}</div>
+			<h3 class="modal-name">${magia.nombre}</h3>
+			<span class="modal-rarity">${magia.rareza}</span>
+			<div class="modal-mult">Multiplicador <b>×${magia.multiplicador}</b></div>
+		`
+		openModal()
+	}
+	function showMessageModal(texto) {
+		modalBox.className = 'modal'
+		modalContent.innerHTML = `
+			<span class="modal-eyebrow">Grimorio</span>
+			<div class="modal-rune">✧</div>
+			<div class="modal-msg">${texto}</div>
+		`
+		openModal()
 	}
 
+	modalClose.addEventListener('click', closeModal)
+	modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) closeModal() })
+	document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal() })
+
 	function getTotalMultiplier() {
-		return ownedSpells().filter(s => s && s.equipped).reduce((total, spell) => total * (spell.multiplier || 1), 1)
+		return userMagias.reduce((total, m) => total * (Number(m.multiplicador) || 1), 1)
+	}
+
+	async function loadMagias() {
+		const token = getToken()
+		if (!token) { userMagias = []; updateDisplay(); return }
+		try {
+			const res = await fetch(`${API_BASE}/api/game/magias`, {
+				headers: { 'Authorization': `Bearer ${token}` }
+			})
+			if (!res.ok) return
+			userMagias = await res.json()
+			updateDisplay()
+		} catch (err) {
+			console.error('No se pudieron cargar las magias', err)
+		}
 	}
 
 	function isLoggedIn() { return Boolean(localStorage.getItem('token') || localStorage.getItem('magicClickerUser')) }
@@ -259,61 +541,34 @@ import Layout from "../layouts/Layout.astro"
 	function updateDisplay() {
 		clickBtn.textContent = Math.floor(clicks)
 		invokeCostLabel.textContent = invokeCost
-		multiplierLabel.textContent = `Multiplicador total: ${getTotalMultiplier().toFixed(2)}x`
+		multiplierLabel.textContent = `${getTotalMultiplier().toFixed(2)}x`
 		renderMagicCards()
-		renderInventoryCards()
 	}
+
+	const RAREZA_SIMBOLO = { 1: '✦', 2: '✧', 3: '❖', 4: '✺' }
 
 	function renderMagicCards() {
-		const equipped = ownedSpells().filter(s => s && s.equipped)
 		magicGrid.innerHTML = ''
-		if (!equipped.length) return // no mostrar nada si no tenés magias equipadas
-		equipped.forEach(spell => {
-			const card = document.createElement('article')
-			card.className = 'magic-card'
-			card.innerHTML = `
-				<div class="status-row">
-					<h3>${spell.name}</h3>
-					<span class="rarity">${spell.rarity}</span>
+		if (!userMagias.length) {
+			magicGrid.innerHTML = `
+				<div class="magic-empty">
+					<span class="rune-big">✦</span>
+					<p>Todavía no invocaste ninguna magia.</p>
 				</div>
-				<p>${spell.description}</p>
 			`
-			magicGrid.appendChild(card)
-		})
-	}
-
-	function renderInventoryCards() {
-		const owned = ownedSpells()
-		inventoryGrid.innerHTML = ''
-		if (!owned.length) {
-			inventoryGrid.innerHTML = '<p style="color:#fff;">No tenés magias en el inventario.</p>'
 			return
 		}
-		owned.forEach(spell => {
+		userMagias.forEach((spell, i) => {
 			const card = document.createElement('article')
-			card.className = 'inventory-card'
+			card.className = `magic-card rareza-${spell.rareza_id}`
+			card.style.animationDelay = `${i * 60}ms`
 			card.innerHTML = `
-				<div class="status-row">
-					<h3>${spell.name}</h3>
-					<span class="rarity">${spell.rarity}</span>
-				</div>
-				<p>${spell.description}</p>
-				<button class="equip-btn ${spell.equipped ? 'active' : ''}" data-id="${spell.id}">
-					${spell.equipped ? 'EQUIPADA' : 'EQUIPAR'}
-				</button>
+				<div class="magic-rune">${RAREZA_SIMBOLO[spell.rareza_id] || '✦'}</div>
+				<span class="rarity">${spell.rareza}</span>
+				<h3>${spell.nombre}</h3>
+				<span class="mult">×${spell.multiplicador}</span>
 			`
-			inventoryGrid.appendChild(card)
-		})
-		inventoryGrid.querySelectorAll('.equip-btn').forEach(btn => {
-			btn.addEventListener('click', (e) => {
-				const id = Number(e.currentTarget.dataset.id)
-				const idx = userSpells.findIndex(us => us.id === id)
-				if (idx >= 0) {
-					userSpells[idx].equipped = !userSpells[idx].equipped
-				}
-				saveUserSpells(userSpells)
-				updateDisplay()
-			})
+			magicGrid.appendChild(card)
 		})
 	}
 
@@ -321,33 +576,39 @@ import Layout from "../layouts/Layout.astro"
 		if (!isLoggedIn()) { window.location.href = '/login'; return }
 		clicks += getTotalMultiplier()
 		updateDisplay()
+		saveClicks()
 	})
 
-	// Probabilidades: comun 60%, raro 25%, epico 10%, legendario 5%
-	function rollSpellId() {
-		const r = Math.random() * 100
-		if (r < 60) return 1
-		if (r < 85) return 2
-		if (r < 95) return 3
-		return 4
-	}
-
-	invokeBtn.addEventListener('click', () => {
+	invokeBtn.addEventListener('click', async () => {
 		if (!isLoggedIn()) { window.location.href = '/login'; return }
 		if (clicks < invokeCost) return
-		clicks -= invokeCost
-		const id = rollSpellId()
-		const owned = userSpells.some(us => us.id === id)
-		if (owned) {
-			alert('Ya tenés esa magia.');
-		} else {
-			userSpells.push({ id, equipped: false })
-			saveUserSpells(userSpells)
-			alert('¡Has conseguido una nueva magia!')
+		const token = getToken()
+		invokeBtn.disabled = true
+		try {
+			const res = await fetch(`${API_BASE}/api/game/invocar`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
+			})
+			const payload = await res.json().catch(() => ({}))
+			if (!res.ok) {
+				showMessageModal(payload.error || 'No se pudo invocar la magia')
+				return
+			}
+			clicks -= invokeCost
+			updateDisplay()
+			saveClicks()
+			await loadMagias()
+			showMagicModal(payload.magia)
+		} catch (err) {
+			console.error('Error al invocar', err)
+			showMessageModal('Imposible conectar con el servidor')
+		} finally {
+			invokeBtn.disabled = false
 		}
-		updateDisplay()
 	})
 
 	// Inicializar display
 	updateDisplay()
+	loadClicks()
+	loadMagias()
 </script>
